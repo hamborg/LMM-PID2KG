@@ -1,0 +1,39 @@
+# Secrets. auth/config.yaml holds live API keys and must never be committed.
+#
+# Note the pattern: "auth/*" ignores the directory CONTENTS, which lets the
+# next line re-include the template. Writing "auth/" instead would exclude the
+# directory itself, and git cannot re-include a file from inside an excluded
+# directory - the negation would be silently ignored.
+auth/*
+!auth/config.example.yaml
+.env
+
+# Virtual environment
+.venv/
+
+# Python bytecode
+__pycache__/
+*.pyc
+
+# Experiments excluded from version control
+experiments/lvl_3/
+experiments/lvl_4/
+experiments/Ideer.txt
+
+# lvl_1: keep only images/ and prompt files
+experiments/lvl_1/*/*
+experiments/lvl_1/*/images/*/
+!experiments/lvl_1/*/images/
+!experiments/lvl_1/*/prompt*.md
+
+# lvl_2: keep only images/ and prompt files
+experiments/lvl_2/*/*
+experiments/lvl_2/*/images/*/
+!experiments/lvl_2/*/images/
+!experiments/lvl_2/*/prompt*.md
+
+# HITL sessions
+hitl/*
+!hitl/.gitkeep
+# Build artifacts
+*.egg-info/

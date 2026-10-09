@@ -1,0 +1,50 @@
+Based on the BMS screenshot provided, I have performed a technical analysis of the Air Handling Unit (AHU).
+
+**Executive Summary:**
+The system is currently operational and maintaining supply temperature setpoints effectively. However, there is a **critical airflow imbalance** that requires immediate attention, along with potential energy wastage in the heating circuit and questionable sensor readings on the filters.
+
+Here are my specific comments and recommendations for the FM team:
+
+### 1. CRITICAL: Severe Airflow Imbalance
+*   **Observation:** There is a massive discrepancy between the Supply and Exhaust airflow rates.
+    *   **Supply Fan (VI01):** ~7,534 m³/hr (running at 42% speed).
+    *   **Exhaust Fan (VU01):** ~15,151 m³/hr (running at 60% speed).
+*   **Issue:** The building is under significant negative pressure (exhausting double the amount of air being supplied). This will cause:
+    *   Infiltration of unconditioned/dirty air through building cracks/doors.
+    *   Difficulty opening exterior doors ("whistling" doors).
+    *   Reduced energy efficiency.
+*   **Recommendation:**
+    *   Verify if the flow sensors (airflow stations) are calibrated.
+    *   Check the pressure control strategy. The Supply is holding 154 Pa (Setpoint 150 Pa) and Exhaust is holding 230 Pa (Setpoint 230 Pa). The duct static pressure setpoints may be mismatched for the actual duct resistance, causing the fans to run at vastly different rates.
+    *   Investigate if there are other supply fans (not shown) serving this zone, or if this is a configuration error.
+
+### 2. Energy Efficiency: Heating Circuit (PV01)
+*   **Observation:**
+    *   The Heating Circulation Pump is **"Til" (ON)**.
+    *   The Heating Valve (MVV01) is only open **2%**.
+    *   The Supply (TFV01) and Return (TRV01) temperatures across the coil are almost identical (21.8°C vs 21.7°C), indicating almost no heat load.
+    *   The Energy Meter (QM01) shows **0 L/hr** flow.
+*   **Issue:** The pump is running unnecessarily against a closed (or nearly closed) valve. This wastes electricity and wears down the pump.
+*   **Recommendation:** Check the control logic for the heating pump. It should likely have a "Stop Delay" or a threshold (e.g., only run if valve demand > 5-10%). If the valve is at 2%, the pump should likely be off, or the valve is leaking.
+
+### 3. Maintenance: Filter Pressure Sensors
+*   **Observation:**
+    *   **Supply Filter (PFI01):** 11.5 Pa.
+    *   **Exhaust Filter (PFU01):** 4.3 Pa.
+*   **Issue:** These differential pressure readings are **extremely low** for an operational AHU. Even clean bag filters usually register higher resistance (typically 30-50 Pa minimum) at these flow rates.
+*   **Recommendation:**
+    *   Visually inspect the AHU to ensure filters are actually installed.
+    *   Check the plastic pressure tubing connecting the sensors to the AHU casing; they may be disconnected, kinked, or leaking.
+    *   Verify the sensors are not zeroed incorrectly.
+
+### 4. Heat Recovery Wheel (RV01)
+*   **Observation:** The wheel efficiency is calculated at **54.5%**.
+*   **Context:** The Return Air is 21.9°C and the Supply Air after the wheel (TI02) is 21.2°C.
+*   **Recommendation:** Ensure the wheel is modulating correctly. With the heating valve barely open, the system is relying heavily on the wheel to maintain the 22°C setpoint. The logic seems to be working, but verify the rotation sensor/alarm is active, as a belt failure here would immediately drop the supply temp.
+
+### 5. Zone/Duct Pressure Status
+*   **Observation:** The "Spjæld Reg" (Damper Regulation) box on the right shows:
+    *   **Ud Max (Out Max):** 42.8%
+    *   **Ind Max (In Max):** 100.0%
+*   **Analysis:** This suggests that at least one VAV damper on the supply side ("Ind") is 100% open, starving for air, yet the fan is only at 42% speed because it has met its pressure setpoint of 150 Pa.
+*   **Recommendation:** The Supply Static Pressure setpoint (150 Pa) might be too low to satisfy the furthest zones (which are 100% open). Consider a "Trim and Respond" logic to gradually increase the pressure setpoint until the max damper position drops below 90%.

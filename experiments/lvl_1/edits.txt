@@ -1,0 +1,10 @@
+Radiatorer:
+- Kvs værdier på ventiler
+- en eller anden differensudligner på streng
+- TRV?
+rad-prompt:
+- Dimensions unit (måske ligegyldigt)
+
+BMS prompt:
+- energimålere
+- setpoint handling

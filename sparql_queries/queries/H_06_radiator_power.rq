@@ -1,0 +1,27 @@
+PREFIX ex: <http://example.org/mybuilding/> 
+PREFIX bot: <https://w3id.org/bot#>
+PREFIX brick: <https://brickschema.org/schema/Brick#> 
+PREFIX fso: <https://w3id.org/fso#> 
+PREFIX fpo: <http://example.com/fpo#> 
+PREFIX sosa: <http://www.w3.org/ns/sosa/> 
+PREFIX qudt: <http://qudt.org/schema/qudt/> 
+PREFIX unit: <http://qudt.org/vocab/unit/> 
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> 
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> 
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#> 
+
+# How many pipes have a dimension property?
+SELECT DISTINCT ?radiator ?property ?propertyType ?value
+WHERE {
+    ?radiator rdf:type ?radiatorType .
+
+    VALUES ?radiatorType {    
+        fso:Radiator
+        brick:Radiator
+        brick:Convector
+    }
+
+    ?radiator fpo:hasProperty ?property .
+    ?property rdf:type ?propertyType ;
+        fpo:hasValue ?value .
+}

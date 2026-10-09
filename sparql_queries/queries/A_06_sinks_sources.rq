@@ -1,0 +1,85 @@
+PREFIX ex: <http://example.org/mybuilding/> 
+PREFIX bot: <https://w3id.org/bot#>
+PREFIX brick: <https://brickschema.org/schema/Brick#> 
+PREFIX fso: <https://w3id.org/fso#> 
+PREFIX fpo: <http://example.com/fpo#> 
+PREFIX sosa: <http://www.w3.org/ns/sosa/> 
+PREFIX qudt: <http://qudt.org/schema/qudt/> 
+PREFIX unit: <http://qudt.org/vocab/unit/> 
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> 
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> 
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#> 
+
+# How many sources feed sinks?
+SELECT DISTINCT ?source ?sourceType ?sourceSystem ?relation ?sink ?sinkType ?sinkSystem ?sinkLocation
+WHERE {
+        # Connectivity
+        # Both :feeds and :feedsFluidTo are considered as source-sink relationships
+        # Helps capture difference between prompts.
+        {
+            ?source brick:feeds+ ?sink .
+            BIND("Source → Sink. feeds" AS ?relation)
+        }
+        UNION
+        {
+            ?source ^brick:feeds+ ?sink .
+            BIND("Sink → Source. feeds" AS ?relation)
+        }
+        UNION
+        {
+            ?source fso:feedsFluidTo+ ?sink .
+            BIND("Source → Sink. feedsFluidTo" AS ?relation)
+        }
+        UNION
+        {
+            ?source ^fso:feedsFluidTo+ ?sink .
+            BIND("Sink → Source. feedsFluidTo" AS ?relation)
+        }
+        
+        # Types
+        ?source rdf:type/rdfs:subClassOf* ?sourceType .
+        ?sink   rdf:type/rdfs:subClassOf* ?sinkType .
+        
+        # Allowed source types (equipment-like)
+        VALUES ?sourceType {
+            brick:AHU
+            brick:Air_Handling_Unit
+            
+            brick:Fan
+            brick:Supply_Fan
+            brick:Return_Fan
+            brick:Exhaust_Fan
+
+            brick:Pump
+            brick:Equipment
+            brick:Mixing_circuit
+            brick:Water_Loop
+
+            brick:Water_System
+            brick:Heating_System
+            brick:Hot_Water_Return_System
+            brick:Hot_Water_Supply_System
+        }
+
+        # Allowed sink types (terminal/space-like)
+        VALUES ?sinkType {
+            bot:Space
+
+            brick:Air_Diffuser
+            brick:Air_Terminal
+            brick:Return_Air_Terminal
+            brick:Supply_Air_Terminal
+            brick:Terminal_Unit
+
+            brick:Radiator
+
+            # brick:Damper
+            # brick:VAV
+        }
+
+        # Optional metadata
+        OPTIONAL { ?sink brick:hasLocation ?sinkLocation }
+        OPTIONAL { ?sourceSystem brick:hasPart ?source }
+        OPTIONAL { ?sinkSystem brick:hasPart ?sink }
+
+}

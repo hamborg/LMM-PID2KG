@@ -1,0 +1,45 @@
+PREFIX ex: <http://example.org/mybuilding/> 
+PREFIX bot: <https://w3id.org/bot#>
+PREFIX brick: <https://brickschema.org/schema/Brick#> 
+PREFIX fso: <https://w3id.org/fso#> 
+PREFIX fpo: <http://example.com/fpo#> 
+PREFIX sosa: <http://www.w3.org/ns/sosa/> 
+PREFIX qudt: <http://qudt.org/schema/qudt/> 
+PREFIX unit: <http://qudt.org/vocab/unit/> 
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> 
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> 
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#> 
+
+# How many sensors emit a value?
+SELECT DISTINCT ?sensor ?sensorType ?relation ?observedProperty ?result ?unit
+WHERE {
+    ?sensor rdf:type ?sensorType .
+
+    # Sensor-ObservedProperty relation
+    {
+        ?sensor sosa:observes ?observedProperty .
+
+        BIND("Sensor observes" AS ?relation)
+    }
+    UNION
+    {
+        ?observation rdf:type sosa:Observation ;
+            sosa:madeBySensor ?sensor ;
+            sosa:observedProperty ?observedProperty .
+
+        BIND("Observation by sensor" AS ?relation)
+    }
+
+    # Result
+    OPTIONAL {
+        ?observation sosa:hasResult [
+            qudt:numericValue ?result
+        ] .
+    }
+    OPTIONAL {
+        ?observation sosa:hasResult [
+            qudt:unit ?unit
+        ] .
+    }
+
+}

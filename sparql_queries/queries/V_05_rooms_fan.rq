@@ -1,0 +1,47 @@
+PREFIX ex: <http://example.org/mybuilding/> 
+PREFIX bot: <https://w3id.org/bot#>
+PREFIX brick: <https://brickschema.org/schema/Brick#> 
+PREFIX fso: <https://w3id.org/fso#> 
+PREFIX fpo: <http://example.com/fpo#> 
+PREFIX sosa: <http://www.w3.org/ns/sosa/> 
+PREFIX qudt: <http://qudt.org/schema/qudt/> 
+PREFIX unit: <http://qudt.org/vocab/unit/> 
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> 
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> 
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#> 
+
+# How many rooms (or AT’s) are supplied by a fan (or AHU)?
+SELECT DISTINCT ?fan ?relation ?room
+WHERE {
+    ?fan rdf:type ?fanType .
+    ?at rdf:type ?atType .
+    ?room rdf:type bot:Space.
+
+    VALUES ?fanType {
+            brick:Fan
+            brick:Supply_Fan
+            brick:AHU
+            brick:Air_Handling_Unit
+    }
+
+    VALUES ?atType {
+            brick:Air_Diffuser
+            brick:Terminal
+            brick:Terminal_Unit
+            brick:Air_Terminal
+            brick:Supply_Air_Terminal
+    }
+
+    # Both :feeds and :feedsFluidTo are considered as source-sink relationships
+    # Helps capture difference between prompts.
+    {
+        ?fan (brick:feeds | fso:feedsFluidTo)+ ?room .
+        BIND("Fan → Room" AS ?relation)
+    }
+    UNION
+    {
+        ?fan (brick:feeds | fso:feedsFluidTo)+ ?at .
+        ?at brick:hasLocation ?room .
+        BIND("Fan → AT in Room" AS ?relation)
+    }
+}

@@ -1,0 +1,39 @@
+PREFIX ex: <http://example.org/mybuilding/> 
+PREFIX bot: <https://w3id.org/bot#>
+PREFIX brick: <https://brickschema.org/schema/Brick#> 
+PREFIX fso: <https://w3id.org/fso#> 
+PREFIX fpo: <http://example.com/fpo#> 
+PREFIX sosa: <http://www.w3.org/ns/sosa/> 
+PREFIX qudt: <http://qudt.org/schema/qudt/> 
+PREFIX unit: <http://qudt.org/vocab/unit/> 
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> 
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> 
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#> 
+
+# How many components have a location?
+SELECT DISTINCT ?room ?relation ?building ?storey ?roomLocation
+WHERE {
+    ?room rdf:type bot:Space.
+    ?building rdf:type bot:Building .
+
+    OPTIONAL{
+        ?storey rdf:type bot:Storey .
+        ?building bot:hasStorey ?storey .
+    }
+
+    # Relations
+    {
+        ?room (brick:hasLocation | ^bot:hasSpace) ?building .
+        BIND("Room in Building" AS ?relation)
+    }
+    UNION
+    {
+        FILTER NOT EXISTS {
+            ?room (brick:hasLocation | ^bot:hasSpace) ?building .
+        }
+
+        ?room (brick:hasLocation | ^bot:hasSpace) ?roomLocation .
+        BIND("Room in other location" AS ?relation)
+    }
+    
+}

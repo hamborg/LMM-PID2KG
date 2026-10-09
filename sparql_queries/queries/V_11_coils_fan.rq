@@ -1,0 +1,41 @@
+PREFIX ex: <http://example.org/mybuilding/> 
+PREFIX bot: <https://w3id.org/bot#>
+PREFIX brick: <https://brickschema.org/schema/Brick#> 
+PREFIX fso: <https://w3id.org/fso#> 
+PREFIX fpo: <http://example.com/fpo#> 
+PREFIX sosa: <http://www.w3.org/ns/sosa/> 
+PREFIX qudt: <http://qudt.org/schema/qudt/> 
+PREFIX unit: <http://qudt.org/vocab/unit/> 
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> 
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> 
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#> 
+
+# How many coils are connected to a supply fan?
+SELECT DISTINCT ?fan ?fanType ?relation ?coil ?coilType
+WHERE {
+    ?fan rdf:type ?fanType .
+    VALUES ?fanType {
+        brick:Fan
+        brick:Supply_Fan 
+        brick:AHU
+        brick:Air_Handling_Unit
+    }
+
+    ?coil rdf:type ?coilType .
+    VALUES ?coilType {
+        brick:Cooling_Coil
+        brick:Heating_Coil
+        brick:Heating_Exchanger
+    } .
+
+    # Relations
+    {
+        ?fan (fso:feedsFluidTo | ^fso:feedsFluidTo)+ ?coil .
+        BIND("Fan ←→ Coil" AS ?relation)
+    }
+    UNION
+    {
+        ?ahu brick:hasPart ?coil, ?fan .
+        BIND("AHU has (Fan, Coil)" AS ?relation)
+    }
+}

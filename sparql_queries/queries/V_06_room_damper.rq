@@ -1,0 +1,63 @@
+PREFIX ex: <http://example.org/mybuilding/> 
+PREFIX bot: <https://w3id.org/bot#>
+PREFIX brick: <https://brickschema.org/schema/Brick#> 
+PREFIX fso: <https://w3id.org/fso#> 
+PREFIX fpo: <http://example.com/fpo#> 
+PREFIX sosa: <http://www.w3.org/ns/sosa/> 
+PREFIX qudt: <http://qudt.org/schema/qudt/> 
+PREFIX unit: <http://qudt.org/vocab/unit/> 
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> 
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> 
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#> 
+
+# How many rooms have a controlable airflow (damper)?
+SELECT DISTINCT ?damper ?relation ?room
+WHERE {
+    # Types
+    ?room rdf:type bot:Space .
+    ?at rdf:type ?atType .
+    ?damper rdf:type ?damperType .
+
+    VALUES ?atType {
+        brick:Air_Diffuser
+        brick:Air_Terminal
+        brick:Terminal
+        brick:Terminal_Unit
+        brick:Supply_Air_Terminal
+    }
+
+    VALUES ?damperType {
+        brick:CAV
+        brick:VAV
+        brick:Damper
+    }
+
+    # Fluid flows: damper → room
+    {
+        # ?damper fso:feedsFluidTo{1,4} ?at .
+            {
+            ?damper fso:feedsFluidTo ?at .
+            }
+            UNION
+            {
+            ?damper fso:feedsFluidTo/fso:feedsFluidTo ?at .
+            }
+            UNION
+            {
+            ?damper fso:feedsFluidTo/fso:feedsFluidTo/fso:feedsFluidTo ?at .
+            }
+            UNION
+            {
+            ?damper fso:feedsFluidTo/fso:feedsFluidTo/fso:feedsFluidTo/fso:feedsFluidTo ?at .
+            }
+
+        ?at brick:hasLocation ?room .
+        BIND("Damper → AT in room" AS ?relation)
+    }
+    UNION
+    {
+        # Damper is in room. A cheat to catch dampers in rooms without connections.
+        ?damper brick:hasLocation ?room .
+        BIND("Damper in room" AS ?relation)
+    }
+}

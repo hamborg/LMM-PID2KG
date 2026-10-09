@@ -1,0 +1,44 @@
+PREFIX ex: <http://example.org/mybuilding/> 
+PREFIX bot: <https://w3id.org/bot#>
+PREFIX brick: <https://brickschema.org/schema/Brick#> 
+PREFIX fso: <https://w3id.org/fso#> 
+PREFIX fpo: <http://example.com/fpo#> 
+PREFIX sosa: <http://www.w3.org/ns/sosa/> 
+PREFIX qudt: <http://qudt.org/schema/qudt/> 
+PREFIX unit: <http://qudt.org/vocab/unit/> 
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> 
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> 
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#> 
+
+# How many air terminals have a design airflow?
+SELECT DISTINCT ?at ?atType ?room ?relation ?propertyType ?value
+WHERE {
+    ?at rdf:type ?atType .
+    VALUES ?atType {
+        brick:Air_Diffuser
+        brick:Air_terminal
+        brick:Terminal_Unit
+        brick:Supply_Air_Terminal
+        brick:Return_Air_Terminal
+    } .
+
+    ?property rdf:type fpo:DesignAirFlow ;
+        fpo:hasValue ?value .
+    
+    # Relations
+    {
+        ?at fpo:hasProperty ?property .
+        
+        OPTIONAL {
+            ?at brick:hasLocation ?room .
+        }
+        BIND("AT property" AS ?relation)
+    }
+    UNION
+    {
+        ?at brick:hasLocation ?room .
+        ?room rdf:Type bot:Space ;
+            fpo:hasProperty ?property .
+        BIND("Room (with AT) property" AS ?relation)
+    }
+}

@@ -1,0 +1,96 @@
+# pcla_groups.yaml
+# Note to future dev: One could consider adding the path to the query file in the yaml, to avoid having to do the A01 -> A_01 mapping in code.
+
+PCLA_00:
+  name: Components
+  checks:
+    - description: (Default) How many components (and their type classification) exist?
+      query: A00
+
+PCLA_01:
+  name: Location
+  checks:
+    - description: How many components and sensors have a physical location?
+      query: A01
+    - description: How many air terminals are located in a room?
+      query: V01
+    - description: How many radiators are located in a room?
+      query: H01
+
+PCLA_02:
+  name: Systems membership
+  checks:
+    - description: How many components and sensors are part of a (sub)system?
+      query: A02
+    - description: How many energy meters are members of a system?
+      query: A03
+    - description: How many components does the AHU have?
+      query: V02
+    - description: How many fans does each (sub)system have?
+      query: V03
+
+PCLA_03:
+  name: Sensor points
+  checks:
+    - description: How many sensors are attached to a room?
+      query: A04
+    - description: How many sensors are attached to a component?
+      query: A05
+    - description: How many sensors exist in the AHU?
+      query: V04
+
+PCLA_04:
+  name: Global flow
+  checks:
+    - description: How many sinks are connected to a source?
+      query: A06
+    - description: How many rooms/air terminals are supplied by a fan (or AHU)?
+      query: V05
+    - description: How many radiators are connected to main pump (supply)?
+      query: H02
+    - description: How many valves are connected to a pump?
+      query: H03
+
+PCLA_05:
+  name: Local flow
+  checks:
+    - description: How many components receives fluid from its direct upstream neighbour?
+      query: A07
+    - description: How many rooms have a controllable airflow?
+      query: V06
+    - description: How many dampers are connected to a fan?
+      query: V07
+    - description: How many fans are connected to heat exchanger in AHU?
+      query: V08
+    - description: How many connections does the heat exchanger/AHU have?
+      query: V09
+    - description: How many supply branches leave the AHU?
+      query: V10
+    - description: How many coils are connected to the supply fan?
+      query: V11
+    - description: How many radiators are controlled by a valve?
+      query: H04
+
+PCLA_06:
+  name: Design properties
+  checks:
+    - description: How many properties do the components have?
+      query: A08
+    - description: How many air terminals have a design airflow?
+      query: V12
+    - description: How many air handling units have a design airflow?
+      query: V13
+    - description: How many ducts have a dimension?
+      query: V14
+    - description: How many pipes have a dimension?
+      query: H05
+    - description: How many radiators have a design performance?
+      query: H06
+
+PCLA_07:
+  name: Sensor readings
+  checks:
+    - description: How many sensors emit an observation value?
+      query: A09
+    - description: How many sensor points have a reading and a setpoint?
+      query: A10

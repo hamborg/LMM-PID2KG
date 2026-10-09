@@ -1,0 +1,65 @@
+PREFIX ex: <http://example.org/mybuilding/> 
+PREFIX bot: <https://w3id.org/bot#>
+PREFIX brick: <https://brickschema.org/schema/Brick#> 
+PREFIX fso: <https://w3id.org/fso#> 
+PREFIX fpo: <http://example.com/fpo#> 
+PREFIX sosa: <http://www.w3.org/ns/sosa/> 
+PREFIX qudt: <http://qudt.org/schema/qudt/> 
+PREFIX unit: <http://qudt.org/vocab/unit/> 
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> 
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> 
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#> 
+
+# How many dampers are connected to a fan?
+SELECT DISTINCT ?damper ?damperType ?relation ?fan ?fanType ?ahuType
+WHERE {
+    # Fan types
+    ?fan rdf:type ?fanType .
+
+    VALUES ?fanType {
+        brick:Fan
+        brick:Supply_Fan 
+        brick:Return_Fan
+        brick:Exhaust_Fan
+        brick:AHU
+        brick:Air_Handling_Unit
+    }
+
+    # All brick dampers (Subclass not always working)
+    ?damper rdf:type ?damperType .
+    
+    VALUES ?damperType {
+        brick:VAV
+        brick:Damper
+        brick:Fire_Damper
+        brick:Smoke_Damper
+    }
+
+    # Find connection between fan and damper
+    {
+        ?damper (fso:feedsFluidTo | ^fso:feedsFluidTo)+ ?fan .
+        BIND("Damper ←→ Fan" AS ?relation)
+    }
+    UNION
+    {
+        # Connection through fan in AHU
+        ?ahu rdf:type ?ahuType .
+        ?ahu brick:hasPart ?fan .
+
+        # Relations
+        ?damper (fso:feedsFluidTo | ^fso:feedsFluidTo)+ ?ahu .
+        BIND("Damper ←→ Fan in 'AHU'" AS ?relation)
+    }
+    UNION
+    {
+        # Connection through fan in AHU
+        ?ahu rdf:type ?ahuType .
+        ?ahu brick:hasPart ?fan .
+
+        # Relations
+        ?ahu (brick:feeds | ^brick:feeds) ?room .
+        ?at brick:hasLocation ?room . 
+        ?damper (fso:feedsFluidTo | ^fso:feedsFluidTo)+ ?at .
+        BIND("Damper → AT in Room ←→ Fan in 'AHU'" AS ?relation)
+    }
+}

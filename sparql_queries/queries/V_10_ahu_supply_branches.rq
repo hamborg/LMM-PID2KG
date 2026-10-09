@@ -1,0 +1,61 @@
+PREFIX ex: <http://example.org/mybuilding/> 
+PREFIX bot: <https://w3id.org/bot#>
+PREFIX brick: <https://brickschema.org/schema/Brick#> 
+PREFIX fso: <https://w3id.org/fso#> 
+PREFIX fpo: <http://example.com/fpo#> 
+PREFIX sosa: <http://www.w3.org/ns/sosa/> 
+PREFIX qudt: <http://qudt.org/schema/qudt/> 
+PREFIX unit: <http://qudt.org/vocab/unit/> 
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> 
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> 
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#> 
+
+# How many supply branches leave the AHU?
+SELECT ?ahu ?internalComponent ?relation ?branch ?systemType
+WHERE {
+    # AHU type
+    ?ahu rdf:type ?ahuType .
+    VALUES ?ahuType {
+        brick:AHU
+        brick:Air_Handling_Unit
+    }
+
+    # AHU connections
+    {
+        ?ahu brick:hasPart ?internalComponent .
+        ?internalComponent fso:feedsFluidTo ?branch .
+        BIND("internal component → branch" AS ?relation)
+    }
+    UNION
+    {
+        ?ahu fso:feedsFluidTo ?branch .
+        BIND("AHU →(feedsFluidTo) branch" AS ?relation)
+    }
+    UNION
+    {
+        ?ahu brick:feeds ?branch .
+        BIND("AHU →(feeds) branch" AS ?relation)
+    }
+
+    # Branch has to be outside AHU.
+    FILTER NOT EXISTS {
+        {
+            ?ahu brick:hasPart ?branch .
+        }
+        UNION
+        {
+            # Internal duct in AHU (not `part` of AHU) cannot be found as a branch.
+            ?ahu brick:hasPart ?part1, ?part2 .
+            ?part1 fso:feedsFluidTo ?branch .
+            ?branch fso:feedsFluidTo ?part2 .
+        }
+    }
+
+    # Is there a system for the branch?
+    OPTIONAL {
+        # Supply components
+        ?system brick:hasPart ?branch .
+        ?system rdf:type ?systemType .
+    }
+
+}

@@ -1,0 +1,56 @@
+PREFIX ex: <http://example.org/mybuilding/> 
+PREFIX bot: <https://w3id.org/bot#>
+PREFIX brick: <https://brickschema.org/schema/Brick#> 
+PREFIX fso: <https://w3id.org/fso#> 
+PREFIX fpo: <http://example.com/fpo#> 
+PREFIX sosa: <http://www.w3.org/ns/sosa/> 
+PREFIX qudt: <http://qudt.org/schema/qudt/> 
+PREFIX unit: <http://qudt.org/vocab/unit/> 
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> 
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> 
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#> 
+
+# How many air terminals are flow connected to a AHU?
+SELECT DISTINCT ?source ?sourceType ?sourceSystem ?relation ?sink ?sinkType ?sinkSystem ?sinkLocation
+WHERE {
+        # Connectivity
+        {
+            ?source fso:feedsFluidTo+ ?sink .
+            BIND("AHU → AT." AS ?relation)
+        }
+        UNION
+        {
+            ?source ^fso:feedsFluidTo+ ?sink .
+            BIND("AT → AHU." AS ?relation)
+        }
+        
+        # Types
+        ?source rdf:type/rdfs:subClassOf* ?sourceType .
+        ?sink   rdf:type/rdfs:subClassOf* ?sinkType .
+        
+        # Allowed source types
+        VALUES ?sourceType {
+            brick:AHU
+            brick:Air_Handling_Unit
+            
+            brick:Fan
+            brick:Supply_Fan
+            brick:Return_Fan
+            brick:Exhaust_Fan
+        }
+
+        # Allowed sink types
+        VALUES ?sinkType {
+            brick:Air_Diffuser
+            brick:Air_Terminal
+            brick:Return_Air_Terminal
+            brick:Supply_Air_Terminal
+            brick:Terminal_Unit
+        }
+
+        # Optional metadata
+        OPTIONAL { ?sink brick:hasLocation ?sinkLocation }
+        OPTIONAL { ?sourceSystem brick:hasPart ?source }
+        OPTIONAL { ?sinkSystem brick:hasPart ?sink }
+
+}

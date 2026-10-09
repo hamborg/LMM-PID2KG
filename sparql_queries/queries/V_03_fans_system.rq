@@ -1,0 +1,67 @@
+PREFIX ex: <http://example.org/mybuilding/> 
+PREFIX bot: <https://w3id.org/bot#>
+PREFIX brick: <https://brickschema.org/schema/Brick#> 
+PREFIX fso: <https://w3id.org/fso#> 
+PREFIX fpo: <http://example.com/fpo#> 
+PREFIX sosa: <http://www.w3.org/ns/sosa/> 
+PREFIX qudt: <http://qudt.org/schema/qudt/> 
+PREFIX unit: <http://qudt.org/vocab/unit/> 
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> 
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> 
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#> 
+
+# How many fans are part of a system?
+SELECT DISTINCT ?system ?systemType ?relation ?fan
+WHERE {
+    # System definitions
+    ?system rdf:type ?systemType .
+    
+    # filtering out AHU systems
+    FILTER NOT EXISTS{
+        ?system rdf:type ?ahuType .
+            
+        VALUES ?ahuType {
+            brick:Air_Handling_Unit
+            brick:AHU
+
+            # bot:Space  # For Case 4
+        }
+    }
+    
+    # Define fan membership
+    ?fan rdf:type ?fanType .
+    VALUES ?fanType {
+        brick:Fan
+        brick:Supply_Fan
+        brick:Return_Fan
+        brick:Exhaust_Fan
+    }
+
+    {
+        # Case 1: Direct membership
+        ?system brick:hasPart ?fan .
+        BIND("System → Fan" AS ?relation)
+    }
+    UNION
+    {
+        # Case 2: System has component that fan feeds
+        ?fan (brick:feeds | ^brick:feeds | fso:feedsFluidTo | ^fso:feedsFluidTo)+ ?comp .
+        ?system brick:hasPart ?comp .
+        BIND("Fan → Comp in system" AS ?relation)
+    }
+    UNION
+    {
+        # Case 3: System has component that AHU with a fan feeds
+        ?ahu brick:hasPart ?fan .
+        ?ahu (brick:feeds | ^brick:feeds | fso:feedsFluidTo | ^fso:feedsFluidTo)+ ?comp .
+        ?system brick:hasPart ?comp .
+        BIND("Fan in AHU → Comp in system" AS ?relation)
+    }
+    # UNION
+    # {
+    #     # Case 4: AHU with a fan feeds the system
+    #     ?ahu brick:hasPart ?fan .
+    #     ?ahu (brick:feeds | ^brick:feeds | fso:feedsFluidTo | ^fso:feedsFluidTo)+ ?system.
+    #     BIND("Fan in AHU → system" AS ?relation)
+    # }
+}

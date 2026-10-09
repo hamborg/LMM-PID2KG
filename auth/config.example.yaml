@@ -1,0 +1,34 @@
+# Template for auth/config.yaml. Copy it, then fill in your keys:
+#
+#     cp auth/config.example.yaml auth/config.yaml
+#
+# auth/config.yaml is gitignored. This example file is not, so never put a real
+# key in here.
+#
+# You can leave api_key blank entirely and export the keys instead, which keeps
+# them out of the synced project folder altogether:
+#
+#     PowerShell     $env:GEMINI_API_KEY = "..."      (session only)
+#                    setx GEMINI_API_KEY "..."        (persistent, new shells)
+#     bash           export GEMINI_API_KEY="..."
+#
+# Precedence: a real key in this file wins; otherwise the environment variable
+# is used. Placeholder values like the ones below count as "not set", so a
+# straight copy of this file plus environment variables works as-is.
+
+default_provider: gemini  # or openai
+
+gemini:
+  ### Gemini models: https://ai.google.dev/gemini-api/docs/models
+  # Leave blank to use the GEMINI_API_KEY environment variable.
+  api_key: ${GEMINI_API_KEY}  # read from .env (copy the variable names, add your keys)
+  model: gemini-3.1-pro-preview
+  temperature: 0.0
+  thinking_level: "high"
+
+openai:
+  # Leave blank to use the OPENAI_API_KEY environment variable.
+  api_key: ${OPENAI_API_KEY}  # read from .env
+  model: gpt-4.1-nano
+  temperature: 0.0
+  top_p: 1.0 # not applicable for reasoning models

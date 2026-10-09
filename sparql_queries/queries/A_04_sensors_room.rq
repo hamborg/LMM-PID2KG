@@ -1,0 +1,69 @@
+PREFIX ex: <http://example.org/mybuilding/> 
+PREFIX bot: <https://w3id.org/bot#>
+PREFIX brick: <https://brickschema.org/schema/Brick#> 
+PREFIX fso: <https://w3id.org/fso#> 
+PREFIX fpo: <http://example.com/fpo#> 
+PREFIX sosa: <http://www.w3.org/ns/sosa/> 
+PREFIX qudt: <http://qudt.org/schema/qudt/> 
+PREFIX unit: <http://qudt.org/vocab/unit/> 
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> 
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> 
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#> 
+
+# How many sensors are located in rooms?
+SELECT DISTINCT  ?room ?sensor ?sensorType # ?sensorType # ?observedProperty
+WHERE {
+    ?room a bot:Space .
+    
+    # Define the relation between room and sensors:
+    {
+        ?room brick:hasPoint ?sensor .
+    }
+    UNION
+    {
+        ?sensor brick:hasLocation ?room .
+    }
+
+    # Define sensors:
+    {
+        ?sensor rdf:type/rdfs:subClassOf* ?sensorType.
+    }
+    UNION
+    {
+        ?observation sosa:madeBySensor ?sensor ;
+            sosa:observedProperty ?observedProperty .
+    }
+
+    VALUES ?sensorType {
+        brick:Sensor
+        brick:Energy_Meter
+
+        brick:Humidity_Sensor
+        brick:Relative_Humidity_Sensor
+        brick:CO2_Sensor
+        brick:Occupancy_Sensor
+        
+        brick:Flow_Sensor
+        brick:Air_Flow_Sensor
+        brick:Water_Flow_Sensor
+        
+        brick:Temperature_Sensor
+        brick:Air_Temperature_Sensor
+        brick:Water_Temperature_Sensor
+        brick:Supply_Air_Temperature_Sensor
+        brick:Return_Air_Temperature_Sensor
+        brick:Exhaust_Air_Temperature_Sensor
+        
+        brick:Pressure_Sensor
+        brick:Differential_Pressure_Sensor
+        brick:Supply_Air_Static_Pressure_Sensor
+        brick:Return_Air_Static_Pressure_Sensor
+        brick:Exhaust_Air_Static_Pressure_Sensor
+
+        brick:Pressure_Setpoint
+        brick:Static_Pressure_Setpoint
+        brick:Temperature_Setpoint
+        brick:Supply_Air_Temperature_Setpoint
+        brick:Return_Air_Temperature_Setpoint
+    }
+}
