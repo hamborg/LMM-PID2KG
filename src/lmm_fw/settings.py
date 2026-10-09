@@ -59,7 +59,11 @@ def _load_dotenv(path: str | Path = ".env") -> None:
         key = key.strip()
         if key.lower().startswith("export "):
             key = key[7:].strip()
-        value = value.strip().strip("'\"")
+        value = value.strip()
+        if value[:1] in ("'", '"') and value.count(value[0]) >= 2:
+            value = value[1:value.index(value[0], 1)]  # quoted: take text between quotes
+        else:
+            value = value.split(" #", 1)[0].strip()  # unquoted: drop inline comment
         if key:
             os.environ.setdefault(key, value)
 
@@ -92,9 +96,10 @@ def _resolve_api_key(block: Dict[str, Any], provider: str) -> str:
 def _missing_key_message(provider: str) -> str:
     env_var = ENV_VAR_FOR_PROVIDER[provider]
     return (
-        f"No {provider} API key found. Either set {provider}.api_key in "
-        f"auth/config.yaml (copy auth/config.example.yaml to start), or export "
-        f"{env_var} in your environment."
+        f"No {provider} API key found. Set {env_var} in .env in the current "
+        f"directory (run from the project root), or export it in your "
+        f"environment. auth/config.yaml should reference it as "
+        f"api_key: ${{{env_var}}} (copy auth/config.example.yaml to start)."
     )
 
 

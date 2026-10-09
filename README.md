@@ -1,6 +1,6 @@
 # LMM HVAC Diagram Data Extractor
 
-Experimental framework for extracting semantic knowledge graphs (TTL) from HVAC engineering diagrams (P&ID / BMS) with multimodal LMMs (Gemini / GPT), and for evaluating and refining the result.
+Experimental digitisation framework for extracting semantic knowledge graphs (TTL) from HVAC engineering diagrams (P&ID / BMS images) with multimodal LMMs (Gemini / GPT), and for evaluating and refining the result.
 
 The semantic knowledge graphs are based on the following ontologies:
 - Building Topology Ontology, [BOT](https://w3c-lbd-cg.github.io/bot)
@@ -10,13 +10,19 @@ The semantic knowledge graphs are based on the following ontologies:
 - Semantic Sensor Network Ontology, [SOSA](https://www.w3.org/TR/vocab-ssn/)
 - Quantities, Units, Dimensions, and Types Ontology, [QUDT](https://qudt.org/), specifically SI-units from the [units](https://qudt.org/vocab/unit/) vocab.
 
-The framework has three stages, each with its own entry point in the project root:
+The candidate semantic knowledge graph outputs are then evaluated agains purpose-related competency questions (CQs), grouped into purpose-conditioned levels of abstraction (PCLA).
+
+Finally, an LMM-based human-in-the-loop (HITL) refinement process can then be used to resolve imperfections according to the CQs in question.
+
+---
+
+The framework thus has three stages, each with its own entry point in the project root:
 
 | Stage | Script | Purpose |
 |-------|--------|---------|
-| 1. Extract | `run.py` | Zero-shot LMM call on a prompt + images; saves the output and extracts the Brick TTL |
-| 2. Evaluate | `sparql.py` | Runs SPARQL evaluation queries against a TTL file |
-| 3. Refine | `hitl.py` | Human-in-the-loop (HITL) loop: the user gives instructions, the LMM revises the TTL, the result is re-evaluated |
+| 1. Graph Extraction | `run.py` | Zero-shot LMM call on a prompt + images; saves the output as a semantic knowledge graph (`TTL`). |
+| 2. CQ Evaluation | `sparql.py` | Runs SPARQL evaluation queries against a TTL graph. |
+| 3. Graph Refinement | `hitl.py` | Human-in-the-loop (HITL): the user gives instructions, the LMM revises the TTL, the result is re-evaluated. |
 
 ## 1. Project structure (high level)
 
@@ -108,9 +114,11 @@ GEMINI_API_KEY=...
 OPENAI_API_KEY=...
 ```
 
-In `config.yaml`, a key is referenced as `api_key: ${GEMINI_API_KEY}`. At startup `load_config()` reads `.env` and expands these references. Variables already set in the real environment take precedence over `.env`, and a real key written directly in the YAML wins over both. Placeholder values (anything starting with `YOUR_`, `<`, `CHANGEME` or `REPLACE_ME`) count as not set and fall back to the environment variable.
+The format is plain `NAME=value` lines (optional quotes, `#` comments). Instead of `.env` you can export the same variables in your shell (`$env:GEMINI_API_KEY = "..."` in PowerShell, `export GEMINI_API_KEY=...` in bash).
 
-> **Note:** The project folder is synced to OneDrive, so `.env` and `config.yaml` are replicated too. Never commit real keys. If a key has been exposed, rotate it.
+In `config.yaml`, a key is referenced as `api_key: ${GEMINI_API_KEY}`. When `run.py` or `hitl.py` selects an LMM client, `load_config()` reads `.env` from the current working directory (so run from the project root) and expands these references. `sparql.py` makes no LMM calls and does not load either file. Variables already set in the real environment take precedence over `.env`, and a real key written directly in the YAML wins over both. Placeholder values (anything starting with `YOUR_`, `<`, `CHANGEME` or `REPLACE_ME`) count as not set and fall back to the environment variable.
+
+> **Note:** `.env` and `config.yaml` are replicated too. Never commit real keys. If a key has been exposed, rotate it.
 
 > **Known limitation:** `load_config()` requires *both* keys, even when you only run one provider.
 
@@ -126,7 +134,7 @@ Model, temperature and thinking level are set per provider in `config.yaml`. The
 
 ## 5. Experiment folders
 
-Experiments are organised by level (`lvl_0` to `lvl_4`, increasing difficulty). An experiment is a folder named with a two-digit number prefix, e.g. `experiments/lvl_1/02 5704 køkken VEN-9.03/`. It is selected on the command line by its number only (`-l 1 -e 2`). Folder names contain spaces and non-ASCII characters, so quote paths in the shell.
+Experiments are organised by level (`lvl_0` to `lvl_4`). An experiment is a folder named with a two-digit number prefix, e.g. `experiments/lvl_1/02 5704 køkken VEN-9.03/`. It is selected on the command line by its number only (`-l 1 -e 2`). Folder names contain spaces and non-ASCII characters, so quote paths in the shell.
 
 ```text
 experiments/lvl_1/02 5704 køkken VEN-9.03/

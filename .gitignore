@@ -20,6 +20,11 @@ experiments/lvl_3/
 experiments/lvl_4/
 experiments/Ideer.txt
 
+# lvl_0: keep only images/ and prompt files
+experiments/lvl_0/*/*
+!experiments/lvl_0/*/images/
+!experiments/lvl_0/*/prompt*.md
+
 # lvl_1: keep only images/ and prompt files
 experiments/lvl_1/*/*
 experiments/lvl_1/*/images/*/

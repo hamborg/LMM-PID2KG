@@ -11,7 +11,7 @@ def main():
     ap.add_argument("-m", "--provider", "--llm", "--lmm", dest="provider", type=str.lower, default=Default.PROVIDER, help="LMM: Gemini or Gpt (Default: Gemini)")
     ap.add_argument("-p", "--prompt", "--version", "--file", dest="prompt", nargs="+", default=Default.PROMPT, help="Prompt for the LMM. If not specified, will use 'prompt.md' in the experiment folder. If specified, will look for 'prompt_{prompt}.md' (e.g. prompt_v2.md) in the experiment folder.")
     ap.add_argument("-t", "--no-timestamp", action="store_true", help="Do not append timestamp to output filename")
-    ap.add_argument("-r", "--runs", dest="tests", type=int, default=Default.RUNS, help="Number of runs/tests for each exp. (default 1, max 25)")
+    ap.add_argument("--runs", dest="tests", type=int, default=Default.RUNS, help="Number of runs/tests for each exp. (default 1, max 25)")
     ap.add_argument("-n", "--comment", "--note", dest="note", nargs="+", default=Default.NOTE, help="Append a comment/note to the output filename (e.g. 'fewshot' or 'v2prompt')")
 
     args = ap.parse_args()

@@ -1,20 +1,18 @@
-# Template for auth/config.yaml. Copy it, then fill in your keys:
+# Template for auth/config.yaml. Copy it:
 #
 #     cp auth/config.example.yaml auth/config.yaml
 #
-# auth/config.yaml is gitignored. This example file is not, so never put a real
-# key in here.
+# API keys do NOT go in this file. Put them in a .env file in the project root
+# (gitignored; run the framework from the project root so it is found):
 #
-# You can leave api_key blank entirely and export the keys instead, which keeps
-# them out of the synced project folder altogether:
+#     GEMINI_API_KEY=...
+#     OPENAI_API_KEY=...
 #
-#     PowerShell     $env:GEMINI_API_KEY = "..."      (session only)
-#                    setx GEMINI_API_KEY "..."        (persistent, new shells)
-#     bash           export GEMINI_API_KEY="..."
-#
-# Precedence: a real key in this file wins; otherwise the environment variable
-# is used. Placeholder values like the ones below count as "not set", so a
-# straight copy of this file plus environment variables works as-is.
+# The ${VAR} references below are replaced with those values when the config is
+# loaded. A variable already set in the shell takes precedence over .env. A real
+# key typed directly into api_key wins over both, but avoid that: this folder is
+# synced to OneDrive. Placeholder values (YOUR_..., <...>, CHANGEME, REPLACE_ME)
+# count as "not set" and fall back to the environment variable.
 
 default_provider: gemini  # or openai
 
